@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Search, User, Sparkles, Languages } from 'lucide-react';
+import { Search, User, Sparkles, Languages, Book } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../AuthProvider';
 
 export function Navbar() {
   const { t, i18n } = useTranslation();
+  const { user, login, logout } = useAuth();
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname === '/processing' || location.pathname === '/reader';
 
@@ -18,8 +20,10 @@ export function Navbar() {
       <nav className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-tr from-secondary to-primary rounded-lg shadow-lg" />
-            <span className="font-headline text-lg font-extrabold tracking-tighter">LUMINA <span className="font-light opacity-60">AI</span></span>
+            <div className="w-8 h-8 bg-gradient-to-tr from-secondary to-primary rounded-lg shadow-lg flex items-center justify-center">
+              <Book className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-headline text-lg font-extrabold tracking-tighter">SUMMARIZER <span className="font-light opacity-60">AI</span></span>
           </Link>
           <div className="hidden md:flex items-center gap-8 ml-4">
             <Link 
@@ -61,10 +65,27 @@ export function Navbar() {
               <Search className="absolute right-3 top-2.5 w-4 h-4 text-on-surface-variant" />
             </div>
           )}
-          <Button variant="ghost" size="sm" className="hidden md:flex p-2">
-            <User className="w-5 h-5" />
-          </Button>
-          <Button variant="primary" size="md">Sign Up</Button>
+          
+          {user ? (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full border border-primary/20" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
+                    <User className="w-4 h-4" />
+                  </div>
+                )}
+                <span className="hidden md:block text-[10px] uppercase font-bold opacity-60 max-w-[100px] truncate">{user.displayName || user.email}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={logout} className="text-[10px] uppercase font-bold text-red-400">Logout</Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={login} className="text-[10px] uppercase font-bold">{t('nav.login')}</Button>
+              <Button variant="primary" size="md" onClick={login}>Sign Up</Button>
+            </div>
+          )}
         </div>
       </nav>
     </header>

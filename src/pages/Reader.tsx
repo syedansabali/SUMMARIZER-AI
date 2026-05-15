@@ -309,7 +309,7 @@ export function Reader() {
         const ragRes = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId, query: userMsg })
+          body: JSON.stringify({ jobId, query: userMsg, chatId: jobId, messages })
         });
         
         if (ragRes.ok) {
@@ -319,6 +319,13 @@ export function Reader() {
 
         const response = await geminiService.chatWithDocument(context || doc.text, messages, userMsg);
         setMessages(prev => [...prev, { role: 'model', text: response }]);
+
+        // Save assistant response to background
+        fetch('/api/chat/save-response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chatId: jobId, text: response }) // Using jobId as chatId for simplicity in this version
+        }).catch(err => console.error('Failed to save response:', err));
       }
     } catch (err) {
       console.error(err);
@@ -428,7 +435,7 @@ export function Reader() {
                   </div>
 
                   <div className="absolute bottom-6 right-10 text-[10px] font-mono text-black/20">
-                    Lumina Engine / PAGE {index + 1}
+                    Summarizer AI Engine / PAGE {index + 1}
                   </div>
                 </motion.div>
               </div>
@@ -510,7 +517,7 @@ export function Reader() {
                 activeTab === 'chat' ? "bg-primary/20 text-primary shadow-sm" : "opacity-40 hover:opacity-100"
               )}
             >
-              Lumina Chat
+              Summarizer AI Chat
             </button>
             <button
               onClick={() => setActiveTab('research')}
@@ -535,7 +542,7 @@ export function Reader() {
                 )}>
                   <p className="text-[9px] uppercase tracking-widest font-bold text-white/40 mb-2 font-mono flex items-center gap-2">
                     {msg.role === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
-                    {msg.role === 'user' ? 'USER' : 'LUMINA'}
+                    {msg.role === 'user' ? 'USER' : 'SUMMARIZER AI'}
                   </p>
                   <p className="text-sm leading-relaxed text-white whitespace-pre-wrap">
                     {msg.text}

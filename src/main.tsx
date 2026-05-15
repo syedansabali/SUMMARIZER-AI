@@ -4,8 +4,12 @@ import App from './App.tsx';
 import './index.css';
 import './lib/i18n';
 
+import {AuthProvider} from './components/AuthProvider.tsx';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </StrictMode>,
 );

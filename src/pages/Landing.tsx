@@ -150,7 +150,7 @@ export function LandingPage() {
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
             <div className="max-w-2xl">
               <h2 className="font-headline text-4xl mb-3 text-white">Ready to unlock your cognitive superpower?</h2>
-              <p className="text-lg text-on-surface-variant">Join thousands of researchers and students who are already using Lumina to stay ahead.</p>
+              <p className="text-lg text-on-surface-variant">Join thousands of researchers and students who are already using Summarizer AI to stay ahead.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
               <input 
@@ -168,8 +168,8 @@ export function LandingPage() {
       <footer className="bg-surface-container-lowest border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col items-center md:items-start gap-2">
-            <span className="font-headline text-xl text-primary font-bold">Lumina AI</span>
-            <p className="text-sm text-on-surface-variant text-center md:text-left">© 2024 Lumina AI Summarizer. Cognitive Superpower Guaranteed.</p>
+            <span className="font-headline text-xl text-primary font-bold">Summarizer AI</span>
+            <p className="text-sm text-on-surface-variant text-center md:text-left">© 2024 Summarizer AI Summarizer. Cognitive Superpower Guaranteed.</p>
           </div>
           <div className="flex gap-8">
             {['Privacy Policy', 'Terms of Service', 'API Status', 'Contact'].map(link => (

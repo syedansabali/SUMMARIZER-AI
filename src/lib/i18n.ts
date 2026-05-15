@@ -13,7 +13,7 @@ const resources = {
       },
       dashboard: {
         hero: 'Ignite Your Intelligence',
-        heroDesc: 'Drag and drop your complex PDFs or books here to extract crystalline insights instantly with Lumina AI.',
+        heroDesc: 'Drag and drop your complex PDFs or books here to extract crystalline insights instantly with Summarizer AI.',
         createNew: 'Create New Summary',
         uploading: 'Uploading...',
         dropZone: 'Drop your files here',
@@ -30,14 +30,14 @@ const resources = {
       },
       reader: {
         tutorMode: 'Tutor Mode',
-        studyCore: 'Lumina Study Core',
+        studyCore: 'Summarizer Study Core',
         distilling: 'AI Distilling...',
         ready: 'Ready to Analyze',
         placeholder: 'Ask anything about this document...',
       },
       landing: {
         title: 'Transform Any Document Into Instant Wisdom.',
-        subtitle: 'Harness the power of Lumina AI to distill complex PDFs and massive books into actionable knowledge instantly.',
+        subtitle: 'Harness the power of Summarizer AI to distill complex PDFs and massive books into actionable knowledge instantly.',
         getStarted: 'Get Started for Free',
         viewDemo: 'View Demo',
       },
@@ -53,7 +53,7 @@ const resources = {
       },
       dashboard: {
         hero: 'Allumez votre intelligence',
-        heroDesc: 'Glissez-déposez vos PDF ou livres complexes ici pour extraire instantanément des informations cristallines avec Lumina AI.',
+        heroDesc: 'Glissez-déposez vos PDF ou livres complexes ici pour extraire instantanément des informations cristallines avec Summarizer AI.',
         createNew: 'Créer un nouveau résumé',
         uploading: 'Téléchargement...',
         dropZone: 'Déposez vos fichiers ici',
@@ -70,14 +70,14 @@ const resources = {
       },
       reader: {
         tutorMode: 'Mode tuteur',
-        studyCore: 'Cœur d\'étude Lumina',
+        studyCore: 'Cœur d\'étude Summarizer',
         distilling: 'Distillation IA...',
         ready: 'Prêt à analyser',
         placeholder: 'Demandez n\'importe quoi sur ce document...',
       },
       landing: {
         title: 'Transformez n\'importe quel document en sagesse instantanée.',
-        subtitle: 'Exploitez la puissance de Lumina AI pour distiller des PDF complexes et des livres volumineux en connaissances exploitables instantanément.',
+        subtitle: 'Exploitez la puissance de Summarizer AI pour distiller des PDF complexes et des livres volumineux en connaissances exploitables instantanément.',
         getStarted: 'Commencer gratuitement',
         viewDemo: 'Voir la démo',
       },
@@ -93,7 +93,7 @@ const resources = {
       },
       dashboard: {
         hero: 'Enciende tu inteligencia',
-        heroDesc: 'Arrastra y suelta tus PDF o libros complejos aquí para extraer información cristalina al instante con Lumina AI.',
+        heroDesc: 'Arrastra y suelta tus PDF o libros complejos aquí para extraer información cristalina al instante con Summarizer AI.',
         createNew: 'Crear nuevo resumen',
         uploading: 'Subiendo...',
         dropZone: 'Suelte sus archivos aquí',
@@ -110,14 +110,14 @@ const resources = {
       },
       reader: {
         tutorMode: 'Modo tutor',
-        studyCore: 'Núcleo de estudio Lumina',
+        studyCore: 'Núcleo de estudio Summarizer',
         distilling: 'Destilando IA...',
         ready: 'Listo para analizar',
         placeholder: 'Pregunta cualquier cosa sobre este documento...',
       },
       landing: {
         title: 'Transforme cualquier documento en sabiduría instantánea.',
-        subtitle: 'Aproveche el poder de Lumina AI para sintetizar PDF complejos y libros masivos en conocimiento útil al instante.',
+        subtitle: 'Aproveche el poder de Summarizer AI para sintetizar PDF complejos y libros masivos en conocimiento útil al instante.',
         getStarted: 'Empezar gratis',
         viewDemo: 'Ver demostración',
       },
