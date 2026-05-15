@@ -1,10 +1,10 @@
 {
-  "projectId": "sonorous-backup-1cf5x",
-  "appId": "1:448472525063:web:91c8e3bb73240856a5bda2",
-  "apiKey": "AIzaSyBwdP33dOmG-NoMJzO-w4_1OzMd2iIgwIU",
-  "authDomain": "sonorous-backup-1cf5x.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-d3fc5c78-45bd-4ef4-b775-b1f9da2fe3e0",
-  "storageBucket": "sonorous-backup-1cf5x.firebasestorage.app",
-  "messagingSenderId": "448472525063",
-  "measurementId": ""
+  "apiKey": "AIzaSyB5GseOcJKgT90UWKoSg2NUT0isZDHDTz8",
+  "authDomain": "summarizer-ai-1b05e.firebaseapp.com",
+  "projectId": "summarizer-ai-1b05e",
+  "storageBucket": "summarizer-ai-1b05e.firebasestorage.app",
+  "messagingSenderId": "989244826756",
+  "appId": "1:989244826756:web:2ded5401d27a83393b4ed1",
+  "measurementId": "G-WPDG7PNC55",
+  "firestoreDatabaseId": "(default)"
 }
