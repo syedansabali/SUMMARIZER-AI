@@ -4,7 +4,7 @@ import { auth, onAuthStateChanged, User, googleProvider, signInWithPopup } from 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: () => Promise<User | null>;
   logout: () => Promise<void>;
 }
 
@@ -13,6 +13,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -23,12 +24,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async () => {
+    if (isLoggingIn) return null;
+    setIsLoggingIn(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
       return result.user;
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (error: any) {
+      if (error.code === 'auth/popup-blocked') {
+        alert('Please allow popups for this website to sign in.');
+      } else if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+        console.log('Login cancelled by user');
+      } else {
+        console.error("Login failed:", error);
+      }
       return null;
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 

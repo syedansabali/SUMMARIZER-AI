@@ -93,13 +93,23 @@ export function Dashboard() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+          throw new Error(errorData.error || 'Upload failed');
+        } else {
+          const errorText = await response.text();
+          console.error('Non-JSON error response:', errorText.substring(0, 500));
+          throw new Error(`Server returned an error (${response.status}). Please check server logs.`);
+        }
+      }
 
       const { jobId } = await response.json();
       navigate(`/processing?jobId=${jobId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      alert('Failed to upload PDF. Please try again.');
+      alert(error.message || 'Failed to upload PDF. Please try again.');
     } finally {
       setIsUploading(false);
       // Reset input so the same file can be selected again

@@ -1,66 +1,59 @@
 import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 import path from 'path';
 import fs from 'fs';
 
-// Try to load from environment or config file
+// Load configuration
 const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-let config;
+let config: any;
 
 if (fs.existsSync(configPath)) {
-  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-}
-
-let credentials: any = null;
-
-// 1. Try FIREBASE_SERVICE_ACCOUNT environment variable (for Vercel/Lambda)
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
-    credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    console.log('✓ Using Firebase credentials from FIREBASE_SERVICE_ACCOUNT env var');
+    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   } catch (e) {
-    console.error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT:', e);
+    console.error("Error parsing firebase-applet-config.json:", e);
   }
 }
 
-// 2. Try firebase-service-account.json file (for local development)
-if (!credentials) {
-  const serviceAccountPath = path.join(process.cwd(), 'firebase-service-account.json');
-  if (fs.existsSync(serviceAccountPath)) {
-    try {
-      credentials = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      console.log('✓ Using Firebase credentials from firebase-service-account.json');
-    } catch (e) {
-      console.error('❌ Failed to read firebase-service-account.json:', e);
-    }
-  }
-}
+let app: admin.app.App;
 
-// 3. Fallback to Application Default Credentials
-if (!credentials) {
-  console.log('ℹ Attempting to use Application Default Credentials (Google Cloud)');
-}
-
-// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
-  if (credentials) {
-    admin.initializeApp({
-      credential: admin.credential.cert(credentials),
-      projectId: credentials.project_id || config?.projectId,
-    });
-    console.log('✓ Firebase Admin SDK initialized with service account credentials');
-  } else if (config?.projectId) {
-    // Fallback: Use applicationDefault if no credentials provided
-    admin.initializeApp({
+  try {
+    const options: admin.AppOptions = {
       credential: admin.credential.applicationDefault(),
-      projectId: config.projectId,
-    });
-    console.log('✓ Firebase Admin SDK initialized with Application Default Credentials');
-  } else {
-    console.error('❌ No valid Firebase credentials found. Background persistence will not work correctly.');
-    console.error('   Set FIREBASE_SERVICE_ACCOUNT env var or place firebase-service-account.json in project root');
+    };
+    
+    if (config?.projectId) {
+      options.projectId = config.projectId;
+    }
+    
+    app = admin.initializeApp(options);
+    console.log(`Firebase Admin initialized with project ID: ${app.options.projectId || 'ambient'}`);
+  } catch (error) {
+    console.error("Firebase Admin initialization failed, falling back to ambient defaults:", error);
+    app = admin.initializeApp();
   }
+} else {
+  app = admin.app();
 }
 
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+// Initialize Firestore with specific database ID if provided
+let adminDb: admin.firestore.Firestore;
+const dbId = config?.firestoreDatabaseId;
+
+try {
+  if (dbId) {
+    console.log(`Targeting Firestore database: ${dbId}`);
+    adminDb = getFirestore(app, dbId);
+  } else {
+    adminDb = getFirestore(app);
+  }
+} catch (dbError) {
+  console.warn(`Could not initialize Firestore with databaseId ${dbId}, using default database.`, dbError);
+  adminDb = getFirestore(app);
+}
+
+const adminAuth = admin.auth(app);
+
+export { adminDb, adminAuth, app };
 export const firestore = admin.firestore;

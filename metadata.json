@@ -2,5 +2,5 @@
   "name": "Summarizer AI",
   "description": "Smart Book & PDF Summarizer with AI-powered tutoring capabilities.",
   "requestFramePermissions": ["microphone"],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

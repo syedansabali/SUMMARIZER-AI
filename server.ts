@@ -8,11 +8,17 @@ const pdf = require('pdf-parse');
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import Tesseract from 'tesseract.js';
-import { adminDb, firestore } from './src/lib/firebase-admin';
+import admin from 'firebase-admin';
+import { adminDb, firestore, app } from './src/lib/firebase-admin';
+import { geminiServerService } from './src/services/gemini-server';
+
+console.log('--- SERVER INITIALIZING ---');
 
 // Configuration
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+
+console.log(`Port Configured: ${PORT}`);
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -59,6 +65,13 @@ function chunkText(text: string, size = 1000, overlap = 200): Chunk[] {
 
 async function startServer() {
   const app = express();
+  
+  // Global logger
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  });
+
   app.use(express.json());
 
   // Setup Multer
@@ -74,6 +87,59 @@ async function startServer() {
     limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit for production
   });
 
+  // --- Gemini Proxy Routes ---
+
+  app.post('/api/ai/chat', async (req, res) => {
+    try {
+      const { docText, messages, userMessage } = req.body;
+      const response = await geminiServerService.chatWithDocument(docText, messages, userMessage);
+      res.json({ response });
+    } catch (error: any) {
+      console.error('AI Chat Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ai/summarize', async (req, res) => {
+    try {
+      const { text } = req.body;
+      const summary = await geminiServerService.summarizeDocument(text);
+      res.json({ summary });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ai/tutor-question', async (req, res) => {
+    try {
+      const { docText, history, difficulty } = req.body;
+      const question = await geminiServerService.generateTutoringQuestion(docText, history, difficulty);
+      res.json({ question });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ai/tutor-evaluate', async (req, res) => {
+    try {
+      const { docText, question, answer } = req.body;
+      const evaluation = await geminiServerService.evaluateTutoringAnswer(docText, question, answer);
+      res.json({ evaluation });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ai/research', async (req, res) => {
+    try {
+      const { text } = req.body;
+      const research = await geminiServerService.generateResearchAssistantSuggestions(text);
+      res.json(research);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // --- API Routes ---
 
   // Health check
@@ -81,15 +147,35 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  app.get('/api/upload', (req, res) => {
+    res.json({ message: 'Upload endpoint is active. Use POST to upload files.' });
+  });
+
   // Upload PDF
-  app.post('/api/upload', upload.single('file'), async (req, res) => {
+  app.post('/api/upload', (req, res, next) => {
+    console.log('Incoming upload request:', {
+      method: req.method,
+      url: req.url,
+      headers: req.headers['content-type']
+    });
+    next();
+  }, upload.single('file'), async (req, res) => {
+    const userId = req.body.userId || 'anonymous';
+    const jobId = uuidv4();
+    
     try {
+      console.log('Multer finished processing file:', req.file ? 'YES' : 'NO');
+      
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const userId = req.body.userId || 'anonymous'; // Fallback if no auth passed
-      const jobId = uuidv4();
+      console.log('File details:', {
+        name: req.file.originalname,
+        size: req.file.size,
+        path: req.file.path
+      });
+      
       const job = {
         id: jobId,
         userId,
@@ -102,14 +188,26 @@ async function startServer() {
       };
       
       await adminDb.collection(DOCUMENTS_COLLECTION).doc(jobId).set(job);
+      console.log(`Job metadata created in Firestore: ${jobId}`);
 
       // Start background processing
       processPdfBackground(jobId, req.file.path);
 
       res.json({ jobId });
-    } catch (error) {
-      console.error('Upload error:', error);
-      res.status(500).json({ error: 'Failed to start upload process' });
+    } catch (error: any) {
+      console.error('Upload Error Details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details
+      });
+      
+      const isPermissionError = error.code === 7 || error.message?.includes('PERMISSION_DENIED');
+      
+      res.status(isPermissionError ? 403 : 500).json({ 
+        error: isPermissionError ? 'Firebase Permission Denied' : 'Failed to start upload process',
+        details: error.message,
+        hint: isPermissionError ? 'Please ensure you have run the Firebase Setup tool in the settings menu and that Firestore is enabled in your project.' : undefined
+      });
     }
   });
 
@@ -268,6 +366,12 @@ async function startServer() {
     }
   });
 
+  // API Catch-all
+  app.all('/api/*', (req, res) => {
+    console.log(`API 404: ${req.method} ${req.url}`);
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
+  });
+
   // --- Vite / Static Handling ---
 
   if (process.env.NODE_ENV !== 'production') {
@@ -284,8 +388,18 @@ async function startServer() {
     });
   }
 
+  // Global error handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Unhandled Error:', err);
+    res.status(err.status || 500).json({ 
+      error: err.message || 'Internal Server Error',
+      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+    });
+  });
+
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:${PORT}`);
+    console.log(`Server successfully started. Listening on port: ${PORT}`);
+    console.log(`Access at: http://0.0.0.0:${PORT}`);
   });
 }
 
